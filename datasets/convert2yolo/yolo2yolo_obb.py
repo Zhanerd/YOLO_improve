@@ -1,9 +1,10 @@
 import os
+import tqdm
 
 # 读取文件并转换为新的格式
 def convert_to_new_format(input_dir, output_dir):
     # 获取目录下所有txt文件
-    for filename in os.listdir(input_dir):
+    for filename in tqdm(os.listdir(input_dir), desc=f"Converting {input_dir}"):
         if os.path.exists(output_dir) == False:
             os.makedirs(output_dir)
         print(filename)
