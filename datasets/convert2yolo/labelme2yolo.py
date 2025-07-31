@@ -43,7 +43,7 @@ class YoloLabelmeConverter:
 
     def convert_yolo_to_labelme(self, image_dir, label_dir, output_dir, embed_image=False):
         os.makedirs(output_dir, exist_ok=True)
-        for img_name in tqdm(os.listdir(image_dir), desc=f"Converting {image_dir}"):
+        for img_name in tqdm.tqdm(os.listdir(image_dir), desc=f"Converting {image_dir}"):
             if not img_name.lower().endswith(('.jpg', '.jpeg', '.png')):
                 continue
 
@@ -93,7 +93,7 @@ class YoloLabelmeConverter:
 
     def convert_labelme_to_yolo(self, json_dir, output_txt_dir, output_class_file=None):
         os.makedirs(output_txt_dir, exist_ok=True)
-        for file in tqdm(os.listdir(json_dir), desc=f"Converting {json_dir}"):
+        for file in tqdm.tqdm(os.listdir(json_dir), desc=f"Converting {json_dir}"):
             if not file.endswith('.json'):
                 continue
             with open(os.path.join(json_dir, file), 'r') as f:
@@ -124,16 +124,17 @@ class YoloLabelmeConverter:
                     f.write(cls + '\n')
 
 if __name__ == '__main__':
-    converter = YoloLabelmeConverter(class_file=r'D:\coco_humart\classes.txt')
-    ### yolo2labelme
-    converter.convert_yolo_to_labelme(
-        image_dir=r'D:\coco_humart\train1\images',
-        label_dir=r'D:\coco_humart\train1\labels',
-        output_dir=r'D:\coco_humart\train1\labelme_json',
-        embed_image=False
-    )
+    cls_path = '/home/hz/YOLO_improve/classes.txt'
+    converter = YoloLabelmeConverter(class_file=cls_path)
+    # ### yolo2labelme
+    # converter.convert_yolo_to_labelme(
+    #     image_dir=r'D:\coco_humart\train1\images',
+    #     label_dir=r'D:\coco_humart\train1\labels',
+    #     output_dir=r'D:\coco_humart\train1\labelme_json',
+    #     embed_image=False
+    # )
     ### labelme2yolo
     converter.convert_labelme_to_yolo(
-        json_dir=r'D:\coco_humart\train1\labelme_json',
-        output_txt_dir=r'D:\coco_humart\train1\yolo_txt'
+        json_dir='/home/hz/Desktop/basketball/images5',
+        output_txt_dir='/home/hz/Desktop/images5_txt'
     )

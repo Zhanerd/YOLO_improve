@@ -77,7 +77,7 @@ class Video2YoloConverter:
 
     def process_frame(self, frame, frame_id, need_yolo=False, need_labelme=True):
         h, w = frame.shape[:2]
-        bboxes, _, cls_inds = self.yolo(frame, self.score_thre)
+        bboxes, _, cls_inds = self.yolo(frame, self.score_thre, cls=[0, 13, 32, 56, 57])
 
         base_name = f"frame_{frame_id:06d}"
         img_name = base_name + ".jpg"
@@ -221,19 +221,20 @@ class Video2YoloConverter:
         print("✅ 所有视频帧已处理完毕。")
 
 if __name__ == "__main__":
+    video_path = '/home/hz/Desktop/Volleyball'
     converter = Video2YoloConverter(
-        yolo_model_path=r"D:\ai_library\ai\models\yolov8_m.onnx",
-        class_txt=r'D:\coco_humart\classes.txt',
-        output_dir=r'E:\sport_dataset\basketball_converted_output',
+        yolo_model_path="/home/hz/ai_sport_server/ai/yolo11l.onnx",
+        class_txt='/home/hz/Desktop/classes.txt',
+        output_dir='/home/hz/Desktop/volleyball_converted_output',
         score_thre=0.5
     )
     count = 0
-    skip = 920
-    for root, _, files in os.walk(r'E:\sport_dataset\basketball'):
+    # skip = 920
+    for root, _, files in os.walk(video_path):
         for file in files:
-            if count < skip:
-                count += 1
-                continue
+            # if count < skip:
+            #     count += 1
+            #     continue
             if file.endswith('.mp4'):
                 videopath = os.path.join(root, file)
                 print(f"Processing video: {videopath}")

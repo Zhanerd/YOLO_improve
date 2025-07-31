@@ -17,45 +17,88 @@ def merge_yolo_datasets(dataset_paths, output_root):
         "train": set(),
         "eval": set()
     }
+    IMG_EXTS = {'.jpg', '.jpeg', '.png', '.bmp', '.webp'}
+    global_class_list = []
+    dataset_class_maps = {}  # 每个数据集的本地ID → 全局ID 映射
 
-    def copy_and_rename(subset, src_images, src_labels, dest_images, dest_labels):
-        os.makedirs(dest_images, exist_ok=True)
-        os.makedirs(dest_labels, exist_ok=True)
-        for image_name in tqdm(os.listdir(src_images), desc=f"Converting {src_images}"):
-            if image_name.endswith(('.jpg', '.png')):
-                # 如果文件重名，在名称后添加后缀
-                new_image_name = image_name
-                if new_image_name in existing_files[subset]:
-                    base_name, ext = os.path.splitext(new_image_name)
-                    new_image_name = f"{base_name}_1{ext}"
-                    print(f"重命名文件 {image_name} 为 {new_image_name} 以避免冲突")
+    def load_classes(path):
+        class_file = os.path.join(path, "classes.txt")
+        if not os.path.exists(class_file):
+            raise FileNotFoundError(f"未找到 {class_file}")
+        with open(class_file, "r", encoding="utf-8") as f:
+            return [line.strip() for line in f.readlines() if line.strip()]
 
-                # 复制图像文件
-                shutil.copy(os.path.join(src_images, image_name), os.path.join(dest_images, new_image_name))
+    def ensure_unique_filename(name, existing_set):
+        base, ext = os.path.splitext(name)
+        i = 1
+        new_name = name
+        while new_name in existing_set:
+            new_name = f"{base}_{i}{ext}"
+            i += 1
+        return new_name
 
-                # 处理标签文件
-                label_name = image_name.rsplit('.', 1)[0] + '.txt'
-                new_label_name = new_image_name.rsplit('.', 1)[0] + '.txt'
-                if os.path.exists(os.path.join(src_labels, label_name)):
-                    shutil.copy(os.path.join(src_labels, label_name), os.path.join(dest_labels, new_label_name))
+    def remap_label_file(src_label, dst_label, id_map):
+        with open(src_label, "r") as f_in, open(dst_label, "w") as f_out:
+            for line in f_in:
+                if not line.strip():
+                    continue
+                parts = line.strip().split()
+                old_id = int(parts[0])
+                new_id = id_map.get(old_id, -1)
+                if new_id == -1:
+                    continue  # 忽略未知类别
+                parts[0] = str(new_id)
+                f_out.write(" ".join(parts) + "\n")
 
-                # 记录新文件名，避免重复
-                existing_files[subset].add(new_image_name)
-
-    # 遍历每个数据集路径
+    # 1. 生成 global_class_list 和每个数据集的映射表
     for dataset_path in dataset_paths:
-        # 查找 train、eval 等子文件夹中的 images 和 labels
+        classes = load_classes(dataset_path)
+        id_map = {}
+        for local_id, name in enumerate(classes):
+            if name not in global_class_list:
+                global_class_list.append(name)
+            id_map[local_id] = global_class_list.index(name)
+        dataset_class_maps[dataset_path] = id_map
+
+    print(f"🔢 合并后共 {len(global_class_list)} 个类别：{global_class_list}")
+
+    # 2. 拷贝图片+重映射标签
+    for dataset_path in dataset_paths:
+        id_map = dataset_class_maps[dataset_path]
         for subset in ["train", "eval"]:
-            subset_images = os.path.join(dataset_path, subset, "images")
-            subset_labels = os.path.join(dataset_path, subset, "labels")
-            output_images = os.path.join(output_root, subset, "images")
-            output_labels = os.path.join(output_root, subset, "labels")
+            img_dir = os.path.join(dataset_path, subset, "images")
+            lbl_dir = os.path.join(dataset_path, subset, "labels")
+            if not os.path.isdir(img_dir) or not os.path.isdir(lbl_dir):
+                continue
 
-            # 如果子文件夹存在则进行合并
-            if os.path.isdir(subset_images) and os.path.isdir(subset_labels):
-                copy_and_rename(subset, subset_images, subset_labels, output_images, output_labels)
+            out_img_dir = os.path.join(output_root, subset, "images")
+            out_lbl_dir = os.path.join(output_root, subset, "labels")
+            os.makedirs(out_img_dir, exist_ok=True)
+            os.makedirs(out_lbl_dir, exist_ok=True)
 
-    print("数据集合并完成！")
+            for fname in tqdm(os.listdir(img_dir), desc=f"Merging {subset} from {dataset_path}"):
+                ext = os.path.splitext(fname)[1].lower()
+                if ext not in IMG_EXTS:
+                    continue
+
+                img_src = os.path.join(img_dir, fname)
+                lbl_src = os.path.join(lbl_dir, os.path.splitext(fname)[0] + ".txt")
+
+                new_img_name = ensure_unique_filename(fname, existing_files[subset])
+                new_lbl_name = os.path.splitext(new_img_name)[0] + ".txt"
+                img_dst = os.path.join(out_img_dir, new_img_name)
+                lbl_dst = os.path.join(out_lbl_dir, new_lbl_name)
+
+                shutil.copy(img_src, img_dst)
+                if os.path.exists(lbl_src):
+                    remap_label_file(lbl_src, lbl_dst, id_map)
+                existing_files[subset].add(new_img_name)
+
+    # 3. 写出全局 classes.txt
+    class_out_path = os.path.join(output_root, "classes.txt")
+    with open(class_out_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(global_class_list))
+    print(f"✅ 数据集合并完成，类别写入：{class_out_path}")
 
 if __name__ == "__main__":
     # 示例调用

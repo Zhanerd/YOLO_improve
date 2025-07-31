@@ -1,0 +1,7 @@
+train: /home/hz/Desktop/merged_output/train/images
+val: /home/hz/Desktop/merged_output/eval/images
+test: /home/hz/Desktop/merged_output/test/images
+
+nc: 5
+
+names: ['person','bench','sports ball','chair','couch']

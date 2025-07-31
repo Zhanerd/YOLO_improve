@@ -10,9 +10,9 @@ from ultralytics import YOLO
 
 # model.train(data="coco_humanart.yaml",epochs=500,imgsz=640,save_period=10,device=0,batch=0.9,optimizer='AdamW',lr0=0.0005)
 
-model = YOLO("yolo11n-obb.yaml")
+model = YOLO("yolo11m.pt")
 
-results = model.train(data="/home/hz/hz_lyb/yolo/chair_yl/chair_yl_obb.yaml", epochs=100,imgsz=640,pretrained=False)
+results = model.train(data="/home/hz/YOLO_improve/human_ball_chair.yaml", epochs=100,imgsz=640,pretrained=True)
 
 ############# 超参数说明
 ### batch 设置0-1意味着显存占用率，0.9是90%的占用，会自己分配对应的batchsize

@@ -1,0 +1,5 @@
+person
+bench
+sports ball
+chair
+couch
