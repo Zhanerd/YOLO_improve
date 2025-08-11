@@ -67,7 +67,11 @@ if __name__ == '__main__':
         "/home/hz/Desktop/human_ball_chair/img1",
         "/home/hz/Desktop/human_ball_chair/img2",
         "/home/hz/Desktop/human_ball_chair/img4",
-        "/home/hz/Desktop/human_ball_chair/img5"
+        "/home/hz/Desktop/human_ball_chair/img5",
+        "/home/hz/Desktop/detected",
+        "/home/hz/YOLO_improve/datasets/augment/output",
+        "/home/hz/YOLO_improve/datasets/augment/output_samesize"
     ]
 
     split_and_merge_yolo_datasets(dataset_list, "/home/hz/Desktop/merged_output")
+

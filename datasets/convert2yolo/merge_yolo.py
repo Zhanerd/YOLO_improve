@@ -76,7 +76,7 @@ def merge_yolo_datasets(dataset_paths, output_root):
             os.makedirs(out_img_dir, exist_ok=True)
             os.makedirs(out_lbl_dir, exist_ok=True)
 
-            for fname in tqdm(os.listdir(img_dir), desc=f"Merging {subset} from {dataset_path}"):
+            for fname in tqdm.tqdm(os.listdir(img_dir), desc=f"Merging {subset} from {dataset_path}"):
                 ext = os.path.splitext(fname)[1].lower()
                 if ext not in IMG_EXTS:
                     continue
@@ -103,7 +103,7 @@ def merge_yolo_datasets(dataset_paths, output_root):
 if __name__ == "__main__":
     # 示例调用
     merge_yolo_datasets(
-        dataset_paths=[r"D:\b", r"D:\a"],
-        output_root = r"D:\output",
+        dataset_paths=["/home/hz/Desktop/merged_output", "/home/hz/Desktop/yolo_cps_ball"],
+        output_root = "/home/hz/Desktop/yolo_ball",
     )
 

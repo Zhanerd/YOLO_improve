@@ -135,6 +135,6 @@ if __name__ == '__main__':
     # )
     ### labelme2yolo
     converter.convert_labelme_to_yolo(
-        json_dir='/home/hz/Desktop/basketball/images5',
-        output_txt_dir='/home/hz/Desktop/images5_txt'
+        json_dir='/home/hz/Desktop/detected/images',
+        output_txt_dir='/home/hz/Desktop/detected/labels'
     )
